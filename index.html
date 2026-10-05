@@ -14,6 +14,8 @@
       --subtext-color: #64748b;
       --border-color: #cbd5e1;
       --input-bg: #ffffff;
+      --skeleton-base: #e2e8f0;
+      --skeleton-highlight: #f1f5f9;
     }
 
     body.dark-theme {
@@ -25,6 +27,8 @@
       --subtext-color: #94a3b8;
       --border-color: #334155;
       --input-bg: #1e293b;
+      --skeleton-base: #334155;
+      --skeleton-highlight: #475569;
     }
 
     * {
@@ -164,7 +168,7 @@
     }
 
     .search-box {
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       display: flex;
       gap: 10px;
     }
@@ -197,10 +201,31 @@
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.1s ease;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .search-btn:hover {
       opacity: 0.9;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      height: 4px;
+      background-color: var(--border-color);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-color);
+      transition: width 1s linear;
     }
 
     .results-count {
@@ -209,6 +234,7 @@
       color: var(--subtext-color);
       font-weight: 600;
       text-align: center;
+      min-height: 20px;
     }
 
     .cards-grid {
@@ -299,6 +325,46 @@
       color: var(--subtext-color);
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
+
+    /* Skeleton Loading Styles */
+    @keyframes shimmer {
+      0% { background-position: -200px 0; }
+      100% { background-position: 200px 0; }
+    }
+
+    .skeleton-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-left: 5px solid var(--border-color);
+    }
+
+    .skeleton-line {
+      height: 14px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%);
+      background-size: 400px 100%;
+      animation: shimmer 1.5s infinite ease-in-out;
+    }
+
+    .skeleton-line.title {
+      height: 20px;
+      width: 70%;
+      margin-bottom: 14px;
+    }
+
+    .skeleton-line.short {
+      width: 45%;
+    }
+
+    .skeleton-line.badge {
+      height: 24px;
+      width: 110px;
+      border-radius: 20px;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -354,7 +420,12 @@
       placeholder="Enter your name or Staff ID..." 
       onkeydown="if(event.key === 'Enter') handleSearch()"
     >
-    <button class="search-btn" onclick="handleSearch()">Search</button>
+    <button class="search-btn" id="searchBtn" onclick="handleSearch()">Search</button>
+  </div>
+
+  <!-- Sleek Top Progress Bar -->
+  <div class="progress-container" id="progressContainer">
+    <div class="progress-bar" id="progressBar"></div>
   </div>
 
   <div class="results-count" id="resultsCount"></div>
@@ -490,16 +561,18 @@
   ];
 
   const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
   const membersGrid = document.getElementById('membersGrid');
   const resultsCount = document.getElementById('resultsCount');
   const adminToggle = document.getElementById('adminToggle');
   const darkToggle = document.getElementById('darkToggle');
   const statsBar = document.getElementById('statsBar');
   const headerSubtext = document.getElementById('headerSubtext');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressBar = document.getElementById('progressBar');
 
   const adminPhone = "233202790002";
 
-  // Handle Dark Mode Switch
   function handleDarkToggle() {
     if (darkToggle.checked) {
       document.body.classList.add('dark-theme');
@@ -550,10 +623,28 @@
     }
   }
 
+  function showSkeletonLoading() {
+    resultsCount.textContent = "Searching records...";
+    membersGrid.innerHTML = '';
+    
+    // Render 3 skeleton cards
+    for (let i = 0; i < 3; i++) {
+      const skelCard = document.createElement('div');
+      skelCard.className = 'skeleton-card';
+      skelCard.innerHTML = `
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line badge"></div>
+      `;
+      membersGrid.appendChild(skelCard);
+    }
+  }
+
   function renderMembers(data, hasSearched = false) {
     membersGrid.innerHTML = '';
 
-    // Standard view prior to searching
     if (!isAdminMode && !hasSearched) {
       resultsCount.textContent = "";
       membersGrid.innerHTML = `
@@ -615,9 +706,8 @@
   function handleSearch() {
     const query = searchInput.value.toLowerCase().trim();
     
-    // In Admin Mode, if field is empty, show all members
     if (isAdminMode && query === "") {
-      renderMembers(members, true);
+      runSearchWithAnimation(members);
       return;
     }
 
@@ -631,13 +721,38 @@
       m.staffId.toString().includes(query)
     );
     
-    renderMembers(filtered, true);
+    runSearchWithAnimation(filtered);
   }
 
-  // Initial state display prompt
+  function runSearchWithAnimation(data) {
+    // Disable inputs during load
+    searchInput.disabled = true;
+    searchBtn.disabled = true;
+
+    // Show Progress Bar
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    setTimeout(() => { progressBar.style.width = '100%'; }, 10);
+
+    // Show Skeletons
+    showSkeletonLoading();
+
+    // 1 Second Delay Simulation
+    setTimeout(() => {
+      renderMembers(data, true);
+      
+      // Reset Controls
+      progressContainer.style.display = 'none';
+      progressBar.style.width = '0%';
+      searchInput.disabled = false;
+      searchBtn.disabled = false;
+      searchInput.focus();
+    }, 1000);
+  }
+
+  // Initial state
   renderMembers([], false);
 </script>
 
 </body>
 </html>
-
