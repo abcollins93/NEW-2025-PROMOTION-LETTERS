@@ -76,6 +76,7 @@
       font-size: 0.9rem;
       color: #64748b;
       font-weight: 600;
+      text-align: center;
     }
 
     .cards-grid {
@@ -156,7 +157,7 @@
     <input type="text" id="searchInput" placeholder="Enter your name or Staff ID..." oninput="filterMembers()">
   </div>
 
-  <div class="results-count" id="resultsCount">Showing 120 members</div>
+  <div class="results-count" id="resultsCount"></div>
 
   <div class="cards-grid" id="membersGrid"></div>
 </div>
@@ -290,23 +291,36 @@
   const membersGrid = document.getElementById('membersGrid');
   const resultsCount = document.getElementById('resultsCount');
 
-  // WhatsApp Admin Phone Number
+  // Admin WhatsApp Contact
   const adminPhone = "233202790002";
 
-  function renderMembers(data) {
-    resultsCount.textContent = `Showing ${data.length} members`;
+  function renderMembers(data, isSearching) {
     membersGrid.innerHTML = '';
 
+    // Blank screen message when search input is empty
+    if (!isSearching) {
+      resultsCount.textContent = "Enter your Staff ID or Name above to check status.";
+      membersGrid.innerHTML = `
+        <div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">
+          🔍 Type your Name or Staff ID in the search box to check your letter status.
+        </div>`;
+      return;
+    }
+
+    resultsCount.textContent = `Showing ${data.length} result(s)`;
+
     if (data.length === 0) {
-      membersGrid.innerHTML = `<div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 20px; color: #666;">No members found matching your search.</div>`;
+      membersGrid.innerHTML = `
+        <div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 40px; color: #dc2626;">
+          ❌ No record found matching your search. Please verify your Staff ID or Name.
+        </div>`;
       return;
     }
 
     data.forEach(member => {
-      // Corrected to use member.received property from dataset
       const isPending = !member.received;
       
-      // WhatsApp pre-filled message
+      // WhatsApp pre-formatted auto-generated message
       const whatsappMsg = encodeURIComponent(
         `Hello, I have received my promotion letter, but my status on the portal is still showing as pending.\n\n` +
         `*Name:* ${member.name}\n` +
@@ -343,18 +357,23 @@
     });
   }
 
-  // Real-time search filter function
+  // Real-time search function
   function filterMembers() {
     const query = searchInput.value.toLowerCase().trim();
+    if (query === "") {
+      renderMembers([], false);
+      return;
+    }
+
     const filtered = members.filter(m => 
       m.name.toLowerCase().includes(query) || 
       m.staffId.toString().includes(query)
     );
-    renderMembers(filtered);
+    renderMembers(filtered, true);
   }
 
-  // Initial Render on page load
-  renderMembers(members);
+  // Initialize with hidden list
+  renderMembers([], false);
 </script>
 
 </body>
