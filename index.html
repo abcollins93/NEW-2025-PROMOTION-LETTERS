@@ -53,10 +53,12 @@
 
     .search-box {
       margin-bottom: 24px;
+      display: flex;
+      gap: 10px;
     }
 
     .search-box input {
-      width: 100%;
+      flex: 1;
       padding: 16px 20px;
       font-size: 1.1rem;
       border: 2px solid #cbd5e1;
@@ -69,6 +71,27 @@
 
     .search-box input:focus {
       border-color: var(--accent-color);
+    }
+
+    .search-btn {
+      padding: 0 24px;
+      background-color: var(--primary-color);
+      color: white;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .search-btn:hover {
+      background-color: #2a4d80;
+    }
+
+    .search-btn:active {
+      transform: scale(0.98);
     }
 
     .results-count {
@@ -154,7 +177,13 @@
   </header>
 
   <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Enter your name or Staff ID..." oninput="filterMembers()">
+    <input 
+      type="text" 
+      id="searchInput" 
+      placeholder="Enter your name or Staff ID..." 
+      onkeydown="if(event.key === 'Enter') handleSearch()"
+    >
+    <button class="search-btn" onclick="handleSearch()">Search</button>
   </div>
 
   <div class="results-count" id="resultsCount"></div>
@@ -163,7 +192,7 @@
 </div>
 
 <script>
-  // Complete Dataset from Official List
+  // Complete Dataset
   const members = [
     { id: 1, name: "ABDUL-RAHAMAN GAFARU", staffId: "649865", rank: "DD", district: "WEST MAMPRUSI", region: "NORTH EAST", received: false },
     { id: 2, name: "ABDULAI CHIMSI IBRAHIM", staffId: "1214858", rank: "ADII", district: "WEST MAMPRUSI", region: "NORTH EAST", received: false },
@@ -294,15 +323,15 @@
   // Admin WhatsApp Contact
   const adminPhone = "233202790002";
 
-  function renderMembers(data, isSearching) {
+  function renderMembers(data, hasSearched) {
     membersGrid.innerHTML = '';
 
-    // Blank screen message when search input is empty
-    if (!isSearching) {
-      resultsCount.textContent = "Enter your Staff ID or Name above to check status.";
+    // Initial state before pressing Search button
+    if (!hasSearched) {
+      resultsCount.textContent = "Enter your Staff ID or Name above and click Search.";
       membersGrid.innerHTML = `
         <div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">
-          🔍 Type your Name or Staff ID in the search box to check your letter status.
+          🔍 Type your Name or Staff ID and click the <strong>Search</strong> button to check your status.
         </div>`;
       return;
     }
@@ -320,7 +349,6 @@
     data.forEach(member => {
       const isPending = !member.received;
       
-      // WhatsApp pre-formatted auto-generated message
       const whatsappMsg = encodeURIComponent(
         `Hello, I have received my promotion letter, but my status on the portal is still showing as pending.\n\n` +
         `*Name:* ${member.name}\n` +
@@ -357,9 +385,10 @@
     });
   }
 
-  // Real-time search function
-  function filterMembers() {
+  // Explicit action function on button click or Enter key
+  function handleSearch() {
     const query = searchInput.value.toLowerCase().trim();
+    
     if (query === "") {
       renderMembers([], false);
       return;
@@ -369,10 +398,11 @@
       m.name.toLowerCase().includes(query) || 
       m.staffId.toString().includes(query)
     );
+    
     renderMembers(filtered, true);
   }
 
-  // Initialize with hidden list
+  // Initialize with initial prompt state
   renderMembers([], false);
 </script>
 
