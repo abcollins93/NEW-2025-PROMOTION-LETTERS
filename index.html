@@ -290,49 +290,73 @@
     { id: 120, name: "YEBOAH OBENG FRANK", staffId: "627203", rank: "DD", district: "AWUTU SENYA WEST", region: "CENTRAL", received: false }
   ];
 
+    const searchInput = document.getElementById('searchInput');
+  const membersGrid = document.getElementById('membersGrid');
+  const resultsCount = document.getElementById('resultsCount');
+
+  // WhatsApp Admin Phone Number
+  const adminPhone = "233202790002";
+
   function renderMembers(data) {
-    const grid = document.getElementById("membersGrid");
-    const count = document.getElementById("resultsCount");
-    
-    count.textContent = `Showing ${data.length} member${data.length === 1 ? '' : 's'}`;
-    grid.innerHTML = "";
+    resultsCount.textContent = `Showing ${data.length} members`;
+    membersGrid.innerHTML = '';
 
     if (data.length === 0) {
-      grid.innerHTML = `<div class="no-results" style="grid-column: 1 / -1;">No teacher found matching your search.</div>`;
+      membersGrid.innerHTML = `<div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 20px; color: #666;">No members found matching your search.</div>`;
       return;
     }
 
-    data.forEach(m => {
-      const card = document.createElement("div");
-      card.className = `card ${m.received ? 'received' : ''}`;
+    data.forEach(member => {
+      const currentStatus = member.status || 'Pending';
+      const isPending = currentStatus.toLowerCase() === 'pending';
       
-      const badgeText = m.received ? '✅ Letter Received' : '🚫 Letter Pending';
-      const badgeClass = m.received ? 'badge-received' : 'badge-pending';
+      // WhatsApp message template
+      const whatsappMsg = encodeURIComponent(
+        `Hello, I have received my promotion letter, but my status on the portal is still showing as pending.\n\n` +
+        `*Name:* ${member.name}\n` +
+        `*Staff ID:* ${member.staffId}\n` +
+        `*Rank:* ${member.rank}\n` +
+        `*District:* ${member.district}\n\n` +
+        `Please update my record on the portal.`
+      );
+      const whatsappUrl = `https://wa.me/${adminPhone}?text=${whatsappMsg}`;
 
+      const card = document.createElement('div');
+      card.className = 'card';
       card.innerHTML = `
-        <div class="card-title">${m.name}</div>
-        <div class="card-detail"><strong>Staff ID:</strong> ${m.staffId}</div>
-        <div class="card-detail"><strong>Expected Rank:</strong> ${m.rank}</div>
-        <div class="card-detail"><strong>District/Location:</strong> ${m.district}</div>
-        <div class="card-detail"><strong>Region:</strong> ${m.region}</div>
-        <div><span class="badge ${badgeClass}">${badgeText}</span></div>
+        <h3>${member.name}</h3>
+        <p><strong>Staff ID:</strong> ${member.staffId}</p>
+        <p><strong>Expected Rank:</strong> ${member.rank}</p>
+        <p><strong>District/Location:</strong> ${member.district}</p>
+        <p><strong>Region:</strong> ${member.region}</p>
+        <div style="margin-top: 10px;">
+          <span class="status-tag ${isPending ? 'pending' : 'ready'}">
+            ${isPending ? '🚫 Letter Pending' : '✅ Letter Received / Ready'}
+          </span>
+        </div>
+        
+        ${isPending ? `
+          <a href="${whatsappUrl}" 
+             target="_blank" 
+             style="display: block; margin-top: 14px; padding: 10px 12px; background-color: #25D366; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            📲 I Received My Letter (Request Update)
+          </a>
+        ` : ''}
       `;
-      grid.appendChild(card);
+      membersGrid.appendChild(card);
     });
   }
 
-  function filterMembers() {
-    const query = document.getElementById("searchInput").value.toLowerCase().trim();
+  // Filter Search Logic
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
     const filtered = members.filter(m => 
       m.name.toLowerCase().includes(query) || 
-      m.staffId.toLowerCase().includes(query)
+      m.staffId.toString().includes(query)
     );
     renderMembers(filtered);
-  }
+  });
 
   // Initial Render
   renderMembers(members);
-</script>
 
-</body>
-</html>
