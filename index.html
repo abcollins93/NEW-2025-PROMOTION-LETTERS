@@ -328,7 +328,7 @@
 
   <header>
     <h1>GES 2025 Promotion Letter Status</h1>
-    <p id="headerSubtext">Search your name or Staff ID to confirm the current status of your promotion letter.</p>
+    <p id="headerSubtext">Enter your name or Staff ID and click Search to confirm your promotion status.</p>
   </header>
 
   <!-- Admin Stats Dashboard (Hidden for Regular Users) -->
@@ -352,7 +352,7 @@
       type="text" 
       id="searchInput" 
       placeholder="Enter your name or Staff ID..." 
-      oninput="handleSearch()"
+      onkeydown="if(event.key === 'Enter') handleSearch()"
     >
     <button class="search-btn" onclick="handleSearch()">Search</button>
   </div>
@@ -363,7 +363,6 @@
 </div>
 
 <script>
-  // Configured Admin Passcode
   const ADMIN_PASSCODE = "2003";
   let isAdminMode = false;
 
@@ -537,7 +536,7 @@
         statsBar.style.display = 'grid';
         headerSubtext.textContent = "Admin Portal View: All status entries unlocked.";
         updateStats();
-        handleSearch();
+        renderMembers(members);
       } else {
         alert("Incorrect Passcode!");
         adminToggle.checked = false;
@@ -546,20 +545,20 @@
     } else {
       isAdminMode = false;
       statsBar.style.display = 'none';
-      headerSubtext.textContent = "Search your name or Staff ID to confirm the current status of your promotion letter.";
-      handleSearch();
+      headerSubtext.textContent = "Enter your name or Staff ID and click Search to confirm your promotion status.";
+      renderMembers([]);
     }
   }
 
-  function renderMembers(data) {
+  function renderMembers(data, hasSearched = false) {
     membersGrid.innerHTML = '';
 
-    // Standard user view prior to searching
-    if (!isAdminMode && searchInput.value.trim() === "") {
-      resultsCount.textContent = "Enter your Staff ID or Name above to check your status.";
+    // Standard view prior to searching
+    if (!isAdminMode && !hasSearched) {
+      resultsCount.textContent = "";
       membersGrid.innerHTML = `
         <div class="no-results" style="grid-column: 1/-1;">
-          🔍 Type your Name or Staff ID above to view your promotion status.
+          🔍 Enter your Name or Staff ID above and click <strong>Search</strong> to check status.
         </div>`;
       return;
     }
@@ -569,7 +568,7 @@
     if (data.length === 0) {
       membersGrid.innerHTML = `
         <div class="no-results" style="grid-column: 1/-1; color: #ef4444;">
-          ❌ No record found matching your query.
+          ❌ No record found matching your search term.
         </div>`;
       return;
     }
@@ -616,9 +615,14 @@
   function handleSearch() {
     const query = searchInput.value.toLowerCase().trim();
     
-    // In Admin Mode, an empty query shows ALL teachers
+    // In Admin Mode, if field is empty, show all members
     if (isAdminMode && query === "") {
-      renderMembers(members);
+      renderMembers(members, true);
+      return;
+    }
+
+    if (query === "") {
+      alert("Please enter a Name or Staff ID first.");
       return;
     }
 
@@ -627,11 +631,11 @@
       m.staffId.toString().includes(query)
     );
     
-    renderMembers(filtered);
+    renderMembers(filtered, true);
   }
 
-  // Initial render state
-  renderMembers([]);
+  // Initial state display prompt
+  renderMembers([], false);
 </script>
 
 </body>
