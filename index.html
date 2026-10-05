@@ -159,6 +159,25 @@
       border: 1px solid #a7f3d0;
     }
 
+    .request-btn {
+      display: block;
+      margin-top: 14px;
+      padding: 11px 12px;
+      background-color: #eab308;
+      color: #0f172a;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 13px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.2s ease;
+    }
+
+    .request-btn:hover {
+      background-color: #ca8a04;
+    }
+
     .no-results {
       text-align: center;
       padding: 40px;
@@ -376,7 +395,7 @@
         ${isPending ? `
           <a href="${whatsappUrl}" 
              target="_blank" 
-             style="display: block; margin-top: 14px; padding: 10px 12px; background-color: #25D366; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+             class="request-btn">
             📲 I Received My Letter (Request Update)
           </a>
         ` : ''}
