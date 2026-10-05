@@ -101,24 +101,20 @@
       border-left-color: #10b981;
     }
 
-    .card-title {
+    .card h3 {
       font-size: 1.1rem;
       font-weight: bold;
       color: var(--primary-color);
       margin-bottom: 8px;
     }
 
-    .card-detail {
+    .card p {
       font-size: 0.9rem;
       margin-bottom: 6px;
       color: #475569;
     }
 
-    .card-detail strong {
-      color: #1e293b;
-    }
-
-    .badge {
+    .status-tag {
       display: inline-block;
       padding: 4px 10px;
       border-radius: 20px;
@@ -127,13 +123,13 @@
       margin-top: 8px;
     }
 
-    .badge-pending {
+    .status-tag.pending {
       background-color: #fef2f2;
       color: #dc2626;
       border: 1px solid #fecaca;
     }
 
-    .badge-received {
+    .status-tag.ready {
       background-color: #ecfdf5;
       color: #059669;
       border: 1px solid #a7f3d0;
@@ -259,7 +255,7 @@
     { id: 89, name: "MOHAMMED MADIATU", staffId: "805364", rank: "ADI", district: "WEST MAMPRUSI", region: "NORTH EAST", received: false },
     { id: 90, name: "MONICA AMOORO", staffId: "864062", rank: "ADII", district: "WEST MAMPRUSI", region: "NORTH EAST", received: false },
     { id: 91, name: "MUNTARI MOHAMMED", staffId: "739697", rank: "DD", district: "OFFINSO MUNICIPAL", region: "ASHANTI", received: false },
-    { id: 92, name: "MUSAH FORAH DANAAH", staffId: "553382", rank: "ADI", district: "OBUASI MUNICIPAL", region: "ASHANTI", received: false },
+    { id: 92, name: "MUSAH FORAH DANAAH", staffId: "553882", rank: "ADI", district: "OBUASI MUNICIPAL", region: "ASHANTI", received: false },
     { id: 93, name: "MUSAH JOSEPH SAKOAKA", staffId: "836965", rank: "ADII", district: "YUNYOO NASUAN", region: "NORTH EAST", received: false },
     { id: 94, name: "NUTAKOR PEACE", staffId: "836254", rank: "ADII", district: "KETA DISTRICT", region: "VOLTA", received: false },
     { id: 95, name: "OBENG BEMPAH MIREKU", staffId: "559249", rank: "DD", district: "KWABRE EAST MUNICIPAL", region: "ASHANTI", received: false },
@@ -290,7 +286,7 @@
     { id: 120, name: "YEBOAH OBENG FRANK", staffId: "627203", rank: "DD", district: "AWUTU SENYA WEST", region: "CENTRAL", received: false }
   ];
 
-    const searchInput = document.getElementById('searchInput');
+  const searchInput = document.getElementById('searchInput');
   const membersGrid = document.getElementById('membersGrid');
   const resultsCount = document.getElementById('resultsCount');
 
@@ -307,10 +303,10 @@
     }
 
     data.forEach(member => {
-      const currentStatus = member.status || 'Pending';
-      const isPending = currentStatus.toLowerCase() === 'pending';
+      // Corrected to use member.received property from dataset
+      const isPending = !member.received;
       
-      // WhatsApp message template
+      // WhatsApp pre-filled message
       const whatsappMsg = encodeURIComponent(
         `Hello, I have received my promotion letter, but my status on the portal is still showing as pending.\n\n` +
         `*Name:* ${member.name}\n` +
@@ -322,7 +318,7 @@
       const whatsappUrl = `https://wa.me/${adminPhone}?text=${whatsappMsg}`;
 
       const card = document.createElement('div');
-      card.className = 'card';
+      card.className = `card ${member.received ? 'received' : ''}`;
       card.innerHTML = `
         <h3>${member.name}</h3>
         <p><strong>Staff ID:</strong> ${member.staffId}</p>
@@ -347,16 +343,19 @@
     });
   }
 
-  // Filter Search Logic
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
+  // Real-time search filter function
+  function filterMembers() {
+    const query = searchInput.value.toLowerCase().trim();
     const filtered = members.filter(m => 
       m.name.toLowerCase().includes(query) || 
       m.staffId.toString().includes(query)
     );
     renderMembers(filtered);
-  });
+  }
 
-  // Initial Render
+  // Initial Render on page load
   renderMembers(members);
+</script>
 
+</body>
+</html>
