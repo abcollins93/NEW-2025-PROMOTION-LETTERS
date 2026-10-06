@@ -394,7 +394,7 @@
 
   <header>
     <h1>GES 2025 Promotion Letter Status</h1>
-    <p id="headerSubtext">Enter your name or Staff ID and click Search to confirm your promotion status.</p>
+    <p id="headerSubtext">Enter a full name, surname, or Staff ID to confirm your promotion status.</p>
   </header>
 
   <!-- Admin Stats Dashboard (Hidden for Regular Users) -->
@@ -417,7 +417,7 @@
     <input 
       type="text" 
       id="searchInput" 
-      placeholder="Enter your name or Staff ID..." 
+      placeholder="Enter name or Staff ID (at least 3 characters)..." 
       onkeydown="if(event.key === 'Enter') handleSearch()"
     >
     <button class="search-btn" id="searchBtn" onclick="handleSearch()">Search</button>
@@ -618,7 +618,7 @@
     } else {
       isAdminMode = false;
       statsBar.style.display = 'none';
-      headerSubtext.textContent = "Enter your name or Staff ID and click Search to confirm your promotion status.";
+      headerSubtext.textContent = "Enter a full name, surname, or Staff ID to confirm your promotion status.";
       renderMembers([]);
     }
   }
@@ -649,7 +649,7 @@
       resultsCount.textContent = "";
       membersGrid.innerHTML = `
         <div class="no-results" style="grid-column: 1/-1;">
-          🔍 Enter your Name or Staff ID above and click <strong>Search</strong> to check status.
+          🔍 Enter at least <strong>3 characters</strong> of your Name or Staff ID above and click <strong>Search</strong> to check status.
         </div>`;
       return;
     }
@@ -711,8 +711,10 @@
       return;
     }
 
-    if (query === "") {
-      alert("Please enter a Name or Staff ID first.");
+    // Guard against searches with fewer than 3 characters
+    if (query.length < 3) {
+      alert("Please enter at least 3 characters (e.g., 'Col', '121', 'Aba') to search.");
+      searchInput.focus();
       return;
     }
 
